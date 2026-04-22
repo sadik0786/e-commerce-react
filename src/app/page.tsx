@@ -8,7 +8,7 @@ export default function Home() {
       <Carousel />
       <div
         className={
-          "bg-linear-to-b from-amber-50 via-amber-80 to-orange-50 py-10"
+          "bg-linear-to-b from-gray-50 via-gray-80 to-gray-50 py-10"
         }
       >
         <p

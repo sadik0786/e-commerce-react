@@ -21,7 +21,7 @@ const Card = ({
     <div
       className="flex flex-col items-center justify-center 
             text-center bg-white p-4 py-12 rounded-2xl w-62.5 m-auto shadow-md 
-            transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-lg"
+            transition-all duration-300 ease-in-out hover:bg-amber-50 hover:-translate-y-2 hover:shadow-xl"
     >
       <Image
         src={imagePath}
