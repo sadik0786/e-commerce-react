@@ -46,7 +46,7 @@ export default function Header() {
       await authService.logout();
       showToast("Logged out successfully", "success");
       await refreshAuth(); // Update global auth state
-      router.push("/login");
+      router.push("/");
     } catch (e) {
       console.error("Failed to logout", e);
       showToast("Logout failed", "error");

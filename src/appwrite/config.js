@@ -142,7 +142,7 @@ export class ConfigService {
     }
   }
   // create add to cart method
-  async addToCart({ productId, userId, quantity }) {
+  async addToCart({ productId, userId, quantity, price }) {
     try {
       return await this.databases.createDocument(
         rootConfig.appWriteDatabaseId,
@@ -152,6 +152,7 @@ export class ConfigService {
           productId,
           userId,
           quantity,
+          price,
         }
       );
     } catch (error) {
