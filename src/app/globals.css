@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+/* Chrome, Safari, Edge */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: none;
+}
+
+/* container (optional) */
+.swiper_class .swiper-pagination {
+  bottom: 20px !important;
+  z-index: 20;
+}
+
+/* 🔥 dots */
+.swiper_class .swiper-pagination-bullet {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  position: relative;
+}
+.swiper_class .swiper-pagination-bullet::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: red;
+  transition: width 5s linear;
+}
+/* 🔥 active animation */
+.swiper_class .swiper-pagination-bullet-active::after {
+  width: 100%;
+}
+
+
+/* 🔥 active dot */
+/* .swiper_class .swiper-pagination-bullet-active {
+  opacity: 1 !important;
+  width: 40px;
+  background: red !important;
+} */
