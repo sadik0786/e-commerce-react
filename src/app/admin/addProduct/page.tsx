@@ -25,6 +25,7 @@ export default function AddProductPage() {
   const [slug, setSlug] = useState("");
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState("100");
+  const [status, setStatus] = useState("true"); // Default to active (as string for select)
   
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,7 +42,7 @@ export default function AddProductPage() {
         price: parseFloat(price),
         productImage: image, 
         slug: slug.trim() || title.toLowerCase().replace(/ /g, "-"),
-        status: true,
+        status: status === "true", // Convert string to boolean
         stock: parseInt(stock),
         category: category.toLowerCase(),
       });
@@ -94,7 +95,7 @@ export default function AddProductPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                <Input
                 label="Price ($)"
                 type="number"
@@ -117,6 +118,14 @@ export default function AddProductPage() {
                 type="number"
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
+                required
+              />
+
+              <Select
+                label="Status"
+                options={["Active", "Inactive"]}
+                value={status === "true" ? "Active" : "Inactive"}
+                onChange={(e) => setStatus(e.target.value === "Active" ? "true" : "false")}
                 required
               />
             </div>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import authService from "@/appwrite/auth";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import Button from "./Button";
 
 export default function Header() {
   const pathname = usePathname();
@@ -102,12 +103,13 @@ export default function Header() {
                 Hi, {user.name || user.email.split("@")[0]}
                 {isAdmin && <span className="ml-2 text-xs bg-red-600 px-2 py-1 rounded">Admin</span>}
               </span>
-              <button
+              <Button
                 onClick={handleLogout}
-                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors text-sm"
+                variant="outline"
+                className="h-10"
               >
                 Logout
-              </button>
+              </Button>
             </div>
           ) : !loading && !user ? (
             <Link
