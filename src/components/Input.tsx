@@ -19,7 +19,7 @@ const Input = ({
   const [showPassword, setShowPassword] = useState(false);
 
   const baseStyles =
-    "w-full px-4 py-2 mt-1 border rounded-md outline-none pr-10";
+    "w-full h-[42px] px-4 py-2 mt-1 border rounded-md outline-none pr-10 transition-all duration-200 focus:ring-1 focus:ring-red-500 focus:border-red-500";
 
   const errorStyles = error ? "border-red-500" : "border-gray-300";
 

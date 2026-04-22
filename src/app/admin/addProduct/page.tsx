@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import configService from "@/appwrite/config";
-import Button from "@/components/Button";
-import Input from "@/components/Input";
+import { Button, Input, Select } from "@/components/index";
 import { roboto } from "@/lib/fonts";
 import { useToast } from "@/context/ToastContext";
 
@@ -42,7 +41,7 @@ export default function AddProductPage() {
         price: parseFloat(price),
         productImage: image, 
         slug: slug.trim() || title.toLowerCase().replace(/ /g, "-"),
-        status: "active",
+        status: true,
         stock: parseInt(stock),
         category: category.toLowerCase(),
       });
@@ -67,13 +66,13 @@ export default function AddProductPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="bg-gray-900 px-8 py-6">
-          <h1 className={`${roboto.className} text-3xl font-bold text-white`}>
+        <div className="bg-gray-900 px-8 py-3">
+          <h1 className={`${roboto.className} text-1xl font-bold text-white`}>
             Add New Product
           </h1>
-          <p className="text-gray-300 mt-2">Create a new listing for your store.</p>
+          <p className="text-gray-300">Create a new listing for your store.</p>
         </div>
 
         <div className="p-8">
@@ -105,22 +104,13 @@ export default function AddProductPage() {
                 required
               />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
-                </label>
-                <select
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Category"
+                options={categories}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              />
 
                <Input
                 label="Initial Stock"
@@ -144,8 +134,8 @@ export default function AddProductPage() {
                 Description
               </label>
               <textarea
-                rows={4}
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                rows={2}
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
                 placeholder="Describe your product features..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -153,7 +143,7 @@ export default function AddProductPage() {
               ></textarea>
             </div>
 
-            <div className="pt-4 flex justify-end">
+            <div className="flex justify-end">
               <Button type="submit" variant="primary" disabled={isLoading} className="px-8">
                 {isLoading ? "Publishing..." : "Add Product to Store"}
               </Button>
