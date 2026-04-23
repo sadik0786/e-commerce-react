@@ -6,6 +6,7 @@ const rootConfig = {
   appWriteWishlistId: String(process.env.NEXT_PUBLIC_APPWRITE_WISHLIST_ID),
   appWriteCartId: String(process.env.NEXT_PUBLIC_APPWRITE_CART_ID),
   appWriteBucketId: String(process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID),
+  appWriteUserMessageId: String(process.env.NEXT_PUBLIC_APPWRITE_USERMESSAGE_ID),
 };
 
 export default rootConfig;

@@ -6,7 +6,7 @@ import Image from "next/image";
 import authService from "@/appwrite/auth";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
-import Button from "./Button";
+import { Button } from "@/components/index";
 
 export default function Header() {
   const pathname = usePathname();
@@ -23,7 +23,11 @@ export default function Header() {
     if (isAdmin) {
       navLinks = [
         { name: "Dashboard", path: "/admin/dashboard" },
-        { name: "Add Product", path: "/admin/addProduct" }, 
+        { name: "Add Product", path: "/admin/addProduct" },
+        { name: "List Product", path: "/admin/listProduct" },
+        { name: "Order List", path: "/admin/orderList" },
+        { name: "User List", path: "/admin/userList" },
+        { name: "User Message", path: "/admin/userMessage" },
       ];
     } else if (user) {
       navLinks = [
@@ -31,6 +35,7 @@ export default function Header() {
         { name: "Product", path: "/product" }, 
         { name: "About", path: "/about" },
         { name: "Contact", path: "/contact" },
+        { name: "Profile", path: "/profile" },
       ];
     } else {
       navLinks = [

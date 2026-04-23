@@ -202,6 +202,41 @@ export class ConfigService {
       throw error;
     }
   }
+
+  // save user message / contact form
+  async saveUserMessage({ u_name, u_mobile, u_email, u_address, u_message }) {
+    try {
+      return await this.databases.createDocument(
+        rootConfig.appWriteDatabaseId,
+        rootConfig.appWriteUserMessageId,
+        ID.unique(),
+        {
+          u_name,
+          u_mobile,
+          u_email,
+          u_address,
+          u_message,
+        }
+      );
+    } catch (error) {
+      console.log("Appwrite service :: saveUserMessage :: error", error);
+      throw error;
+    }
+  }
+
+  // get all user messages for admin
+  async getUserMessages() {
+    try {
+      return await this.databases.listDocuments(
+        rootConfig.appWriteDatabaseId,
+        rootConfig.appWriteUserMessageId,
+        [Query.orderDesc("$createdAt")]
+      );
+    } catch (error) {
+      console.log("Appwrite service :: getUserMessages :: error", error);
+      throw error;
+    }
+  }
 }
 
 
