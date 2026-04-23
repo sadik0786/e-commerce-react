@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Models } from "appwrite";
-import { Button, Toast } from "@/components/index";
-import { roboto } from "@/lib/fonts";
 import { useToast } from "@/context/ToastContext";
 import authService from "@/appwrite/auth";
 import configService from "@/appwrite/config";
+import rootConfig from "@/lib/rootConfig";
+import Image from "next/image";
 
 interface ProductDoc extends Models.Document {
   title: string;
@@ -23,6 +24,7 @@ export default function ProductPage() {
   const { showToast } = useToast();
   const [products, setProducts] = useState<ProductDoc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
 
@@ -33,9 +35,18 @@ export default function ProductPage() {
         setUser(currentUser);
 
         const response = await configService.getProducts();
-        // Only show active products
         const activeProducts = response.documents.filter((p: any) => p.status === true);
         setProducts(activeProducts as unknown as ProductDoc[]);
+        
+        // Load user wishlist state
+        if (currentUser) {
+          const wishResponse = await configService.getWishlist({ userId: currentUser.$id });
+          const wishMap: Record<string, boolean> = {};
+          wishResponse.documents.forEach((doc: any) => {
+            wishMap[doc.productId] = true;
+          });
+          setWishlist(wishMap);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -51,17 +62,22 @@ export default function ProductPage() {
 
     try {
       if (wishlist[productId]) {
-        setWishlist(prev => ({ ...prev, [productId]: false }));
-        showToast("Removed from Wishlist", "info");
+        // Find the document ID to remove (ideally wishlist should be fetched more robustly)
+        const wishResponse = await configService.getWishlist({ userId: user.$id });
+        const docToDelete = wishResponse.documents.find((d: any) => d.productId === productId);
+        if (docToDelete) {
+          await configService.removeFromWishlist({ id: docToDelete.$id });
+          setWishlist(prev => ({ ...prev, [productId]: false }));
+          showToast("Removed from Selection", "info");
+        }
       } else {
-        // Appwrite attributes check: productId, userId
         await configService.addToWishlist({ productId, userId: user.$id });
         setWishlist(prev => ({ ...prev, [productId]: true }));
-        showToast("Added to Wishlist!", "success");
+        showToast("Added to Selection!", "success");
       }
     } catch (error: any) {
       console.error(error);
-      showToast("Check if 'productId' & 'userId' exist in Appwrite Wishlist Collection", "error");
+      showToast("Error updating selection", "error");
     }
   };
 
@@ -75,130 +91,201 @@ export default function ProductPage() {
         quantity: "1", 
         price: product.price.toString(),
       });
-      showToast(`${product.title} added to Cart!`, "success");
+      showToast(`${product.title} added to Bag!`, "success");
     } catch (error: any) {
       console.error(error);
-      showToast("Check if 'productId', 'userId' & 'quantity' exist in Appwrite Cart Collection", "error");
+      showToast("Failed to add to Bag", "error");
     }
+  };
+
+  const getImageUrl = (image: string) => {
+    if (!image || image === "undefined") return "https://fakeimg.pl/800x1200/f3f4f6/9ca3af?text=No+Image";
+    if (typeof image === 'string' && image.startsWith("http")) return image;
+    
+    const project = rootConfig.appWriteProjectId;
+    const bucket = rootConfig.appWriteBucketId;
+    
+    if (!project || project === "undefined" || !bucket || bucket === "undefined") {
+      return `https://fakeimg.pl/800x1200/f3f4f6/9ca3af?text=Missing+ID`;
+    }
+
+    return `https://sgp.cloud.appwrite.io/v1/storage/buckets/${bucket}/files/${image}/view?project=${project}`;
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex justify-center items-center min-h-screen bg-white">
+        <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
+  const filteredProducts = products.filter(product => 
+    product.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-50/30">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
-        <div>
-          <h1 className={`${roboto.className} text-4xl font-black text-gray-900 tracking-tight`}>
-            Premium <span className="text-red-600">Collections</span>
-          </h1>
-          <div className="h-1.5 w-20 bg-red-600 mt-2 rounded-full"></div>
-        </div>
-        <div className="bg-white shadow-sm border border-gray-100 px-6 py-2 rounded-2xl flex items-center gap-2">
-           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-           <span className="text-gray-600 font-medium text-sm">{products.length} Items Live</span>
-        </div>
+    <div className="min-h-screen bg-white selection:bg-black selection:text-white pb-32">
+      
+      {/* Cinematic Hero Header */}
+      <div className="relative pt-6 pb-24 md:pt-10 md:pb-40 px-4 overflow-hidden">
+         {/* Background Aurora Effect */}
+         <div className="absolute top-0 left-0 w-full h-full -z-10">
+            <div className="absolute top-0 right-0 w-[50%] h-[100%] bg-red-50/50 blur-[150px] rounded-full transform translate-x-[20%] -translate-y-[20%]"></div>
+            <div className="absolute bottom-0 left-0 w-[40%] h-[80%] bg-gray-50 blur-[120px] rounded-full transform -translate-x-[10%] translate-y-[10%]"></div>
+         </div>
+
+         <div className="max-w-7xl mx-auto text-center md:text-left flex flex-col md:flex-row items-end justify-between gap-12">
+            <div className="max-w-3xl">
+               <span className="inline-block text-xs font-black uppercase tracking-[0.4em] text-red-600 mb-6">Established MMXXIV</span>
+               <h1 className="text-7xl md:text-[10rem] font-black text-black leading-[0.8] tracking-tighter mb-10">
+                  MODERN <br />
+                  <span className="italic">ESSENTIALS</span>
+               </h1>
+               <p className="text-xl md:text-2xl text-gray-400 font-medium italic max-w-xl leading-relaxed">
+                  A meticulously curated collection of high-performance pieces designed for the contemporary lifestyle.
+               </p>
+            </div>
+            
+            <div className="w-full md:w-auto flex flex-col items-center md:items-end gap-8">
+               {/* Premium Search */}
+               <div className="relative w-full max-w-sm group">
+                  <input 
+                    type="text" 
+                    placeholder="FIND YOUR PIECE" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white border-b-2 border-gray-100 py-4 px-2 font-black text-xs uppercase tracking-[0.3em] focus:outline-none focus:border-black transition-all placeholder:text-gray-200"
+                  />
+                  <svg className="w-5 h-5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-200 group-focus-within:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+               </div>
+               
+               <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">
+                  <span>DISCOVERING</span>
+                  <div className="h-px w-12 bg-gray-100"></div>
+                  <span className="text-black">{filteredProducts.length} ARTICLES</span>
+               </div>
+            </div>
+         </div>
       </div>
 
-      {products.length === 0 ? (
-        <div className="bg-white p-20 rounded-3xl text-center shadow-sm border border-gray-100">
-             <div className="text-6xl mb-4">🛍️</div>
-             <h2 className="text-2xl font-bold text-gray-800">No active products found.</h2>
-             <p className="text-gray-500 mt-2">Check back later for fresh arrivals!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {products.map((product) => {
-            const isWished = wishlist[product.$id];
+      {/* Product Grid Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        {filteredProducts.length === 0 ? (
+          <div className="py-40 text-center flex flex-col items-center border-t border-gray-100">
+             <div className="text-9xl mb-12 opacity-10 grayscale">🔍</div>
+             <h2 className="text-4xl font-black text-black tracking-tight mb-4">NOTHING FOUND</h2>
+             <p className="text-gray-400 font-medium italic text-lg">Your search yielded no results in our current curation.</p>
+             <button onClick={() => setSearchQuery("")} className="mt-10 text-xs font-black uppercase tracking-widest border-b-2 border-black pb-1 hover:text-red-600 hover:border-red-600 transition-all">Clear Search</button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-24">
+            {filteredProducts.map((product) => {
+              const isWished = wishlist[product.$id];
 
-            return (
-              <div 
-                key={product.$id} 
-                className="group bg-white rounded-[2rem] p-3 shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col relative"
-              >
-                {/* Image Section */}
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-gray-100">
-                  <img 
-                    src={product.productImage || "https://fakeimg.pl/600x400/f3f4f6/9ca3af?text=No+Image"} 
-                    alt={product.title} 
-                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                  />
-                  
-                  {/* Category Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-white/90 backdrop-blur-md text-gray-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-widest">
-                      {product.category || "General"}
-                    </span>
-                  </div>
-
-                  {/* Wishlist Button */}
-                  <button 
-                    onClick={() => handleWishlist(product.$id)}
-                    className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:bg-red-50 transition-colors cursor-pointer group/wish"
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill={isWished ? "#ef4444" : "none"} 
-                      viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke={isWished ? "#ef4444" : "#1f2937"} 
-                      className="w-5 h-5 transition-transform group-hover/wish:scale-125"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                    </svg>
-                  </button>
-
-                  {/* Stock Badge */}
-                  {product.stock < 10 && (
-                    <div className="absolute bottom-4 left-4 right-4">
-                        <div className="bg-orange-500/90 backdrop-blur-md text-white text-center text-[10px] font-bold py-1.5 rounded-xl shadow-lg">
-                           ONLY {product.stock} LEFT
-                        </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Content Section */}
-                <div className="px-3 pt-5 pb-2 flex flex-col flex-1">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-red-600 transition-colors">
-                        {product.title}
-                    </h3>
-                  </div>
-                  
-                  <p className="text-gray-500 text-xs line-clamp-2 mb-6 flex-1 leading-relaxed">
-                    {product.description}
-                  </p>
-                  
-                  {/* Action Section */}
-                  <div className="flex items-center justify-between gap-2 mt-auto">
-                    <div className="flex flex-col">
-                        <span className="text-2xl font-black text-gray-900">
-                          ₹{product.price ? product.price.toLocaleString('en-IN') : "0"}
+              return (
+                <div 
+                  key={product.$id} 
+                  className="group flex flex-col"
+                >
+                  {/* Visual Frame */}
+                  <div className="relative aspect-[3/4] rounded-[2.5rem] overflow-hidden bg-gray-50 shadow-lg shadow-gray-200/50 group-hover:shadow-2xl transition-all duration-[1s] mb-10">
+                     <Link href={`/product/${product.$id}`} className="block w-full h-full">
+                        <Image 
+                          src={getImageUrl(product.productImage)} 
+                          alt={product.title}
+                          fill
+                          unoptimized={true}
+                          className="object-cover group-hover:scale-110 transition-transform duration-[2s] ease-out"
+                        />
+                     </Link>
+                     
+                     {/* Action Badges */}
+                     <div className="absolute top-6 left-6 z-10">
+                        <span className="bg-white/40 backdrop-blur-xl border border-white/40 text-black text-[9px] font-black px-4 py-2 rounded-xl shadow-lg uppercase tracking-[0.2em]">
+                          {product.category || "Exclusive"}
                         </span>
-                    </div>
-                    
-                    <button 
-                        onClick={() => handleAddToCart(product)}
-                        className="bg-gray-900 hover:bg-red-600 text-white p-3 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-red-200 active:scale-95 group/btn"
-                    >
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                       </svg>
-                    </button>
+                     </div>
+
+                     <button 
+                        onClick={() => handleWishlist(product.$id)}
+                        className="absolute top-6 right-6 z-10 w-12 h-12 bg-white/40 backdrop-blur-xl border border-white/40 rounded-full shadow-lg flex items-center justify-center transition-all hover:bg-white active:scale-90 group/wish"
+                     >
+                        <svg 
+                          fill={isWished ? "#ef4444" : "none"} 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={2.5} 
+                          stroke={isWished ? "#ef4444" : "#000"} 
+                          className="w-5 h-5"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                        </svg>
+                     </button>
+
+                     {/* Quick View Overlay */}
+                     <Link href={`/product/${product.$id}`} className="absolute inset-x-6 bottom-6 transform translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-75 z-20">
+                        <div className="bg-black text-white text-center py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-red-600 transition-colors shadow-2xl shadow-black/20">
+                           Review Details
+                        </div>
+                     </Link>
+                  </div>
+
+                  {/* Narrative Info */}
+                  <div className="px-2 space-y-4">
+                     <div className="flex justify-between items-start gap-4">
+                        <Link href={`/product/${product.$id}`} className="flex-1">
+                           <h3 className="text-2xl font-black text-black tracking-tighter leading-none group-hover:text-red-600 transition-colors duration-500">
+                               {product.title}
+                           </h3>
+                        </Link>
+                        <span className="text-lg font-black text-black tracking-tighter">
+                           ₹{product.price.toLocaleString('en-IN')}
+                        </span>
+                     </div>
+                     
+                     <p className="text-gray-400 text-sm font-medium line-clamp-1 italic">
+                       {product.description}
+                     </p>
+                     
+                     <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                        <div className="flex gap-1">
+                           {[1,2,3,4,5].map(star => <div key={star} className="w-1.5 h-1.5 bg-gray-100 rounded-full"></div>)}
+                        </div>
+                        <button 
+                           onClick={() => handleAddToCart(product)}
+                           className="text-[10px] font-black uppercase tracking-[0.2em] text-black hover:text-red-600 transition-colors flex items-center gap-2"
+                        >
+                           <span>Add to Bag</span>
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                     </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Decorative Brand Banner */}
+      <div className="mt-64 py-32 bg-black text-white overflow-hidden flex whitespace-nowrap opacity-10 select-none">
+         <div className="text-[15rem] font-black tracking-tighter animate-scroll px-10">MODERN ESSENTIALS • PREMIUM CURATION • TIMELESS DESIGN • </div>
+         <div className="text-[15rem] font-black tracking-tighter animate-scroll px-10">MODERN ESSENTIALS • PREMIUM CURATION • TIMELESS DESIGN • </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+          animation: scroll 60s linear infinite;
+          display: inline-block;
+        }
+      `}</style>
     </div>
   );
 }

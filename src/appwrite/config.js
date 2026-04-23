@@ -1,5 +1,5 @@
 import rootConfig from "../lib/rootConfig";
-import { Client, ID, Databases, Storage, Query } from "appwrite";
+import { Client, ID, Databases, Storage, Query, Permission, Role } from "appwrite";
 
 // create a class
 export class ConfigService {
@@ -108,7 +108,12 @@ export class ConfigService {
         {
           productId,
           userId,
-        }
+        },
+        [
+          Permission.read(Role.user(userId)),
+          Permission.update(Role.user(userId)),
+          Permission.delete(Role.user(userId)),
+        ]
       );
     } catch (error) {
       console.log("Appwrite service :: addToWishlist :: error", error);
@@ -153,7 +158,7 @@ export class ConfigService {
           userId,
           quantity,
           price,
-        }
+        },
       );
     } catch (error) {
       console.log("Appwrite service :: addToCart :: error", error);
@@ -264,6 +269,38 @@ export class ConfigService {
       console.log("Appwrite service :: getUserList :: error", error);
       throw error;
     }
+  }
+
+  // --- STORAGE METHODS ---
+
+  async uploadFile(file) {
+    try {
+      return await this.storage.createFile(
+        rootConfig.appWriteBucketId,
+        ID.unique(),
+        file
+      );
+    } catch (error) {
+      console.log("Appwrite service :: uploadFile :: error", error);
+      return false;
+    }
+  }
+
+  async deleteFile(fileId) {
+    try {
+      await this.storage.deleteFile(rootConfig.appWriteBucketId, fileId);
+      return true;
+    } catch (error) {
+      console.log("Appwrite service :: deleteFile :: error", error);
+      return false;
+    }
+  }
+
+  getFilePreview(fileId) {
+    if (!fileId) return null;
+    // Construct the URL manually to ensure it is absolute and includes all necessary parameters.
+    // This bypasses issues with some SDK versions and Next.js Image optimization.
+    return `${rootConfig.appWriteUrl}/storage/buckets/${rootConfig.appWriteBucketId}/files/${fileId}/view?project=${rootConfig.appWriteProjectId}`;
   }
 }
 
