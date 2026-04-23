@@ -237,6 +237,34 @@ export class ConfigService {
       throw error;
     }
   }
+
+  // get all orders for admin
+  async getOrderList() {
+    try {
+      return await this.databases.listDocuments(
+        rootConfig.appWriteDatabaseId,
+        rootConfig.appWriteOrdersId, // Use the ID from rootConfig
+        [Query.orderDesc("$createdAt")]
+      );
+    } catch (error) {
+      console.log("Appwrite service :: getOrderList :: error", error);
+      throw error;
+    }
+  }
+
+  // get all users (Assuming a 'users' or 'profiles' collection exists)
+  async getUserList() {
+    try {
+      return await this.databases.listDocuments(
+        rootConfig.appWriteDatabaseId,
+        rootConfig.appWriteUsersId, // Use the ID from rootConfig
+        [Query.orderDesc("$createdAt")]
+      );
+    } catch (error) {
+      console.log("Appwrite service :: getUserList :: error", error);
+      throw error;
+    }
+  }
 }
 
 
