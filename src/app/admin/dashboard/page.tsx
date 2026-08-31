@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import configService from "@/appwrite/config";
+import rootConfig from "@/lib/rootConfig";
 import { roboto } from "@/lib/fonts";
 
 export default function AdminDashboard() {
@@ -41,6 +42,20 @@ export default function AdminDashboard() {
 
     fetchDashboardData();
   }, []);
+
+  const getImageUrl = (image: string) => {
+    if (!image || image === "undefined") return "https://fakeimg.pl/200x200/f3f4f6/9ca3af?text=No+Img";
+    if (typeof image === 'string' && image.startsWith("http")) return image;
+    
+    const project = rootConfig.appWriteProjectId;
+    const bucket = rootConfig.appWriteBucketId;
+    
+    if (!project || project === "undefined" || !bucket || bucket === "undefined") {
+      return `https://fakeimg.pl/200x200/f3f4f6/9ca3af?text=Missing+ID`;
+    }
+
+    return `https://sgp.cloud.appwrite.io/v1/storage/buckets/${bucket}/files/${image}/view?project=${project}`;
+  };
 
   const metricCards = [
     { 
@@ -114,11 +129,11 @@ export default function AdminDashboard() {
                 {recentProducts.map((p) => (
                   <tr key={p.$id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 flex items-center">
-                      <img src={p.productImage} className="w-10 h-10 rounded-lg object-cover mr-3 bg-gray-100" alt="" />
+                      <img src={getImageUrl(p.productImage)} className="w-10 h-10 rounded-lg object-cover mr-3 bg-gray-100" alt="" />
                       <span className="font-medium text-gray-900 text-sm line-clamp-1">{p.title}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 capitalize">{p.category}</td>
-                    <td className="px-6 py-4 text-sm font-bold text-red-600">${p.price}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-red-600">₹{p.price}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${p.stock > 10 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {p.stock} Units

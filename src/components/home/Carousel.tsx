@@ -38,10 +38,10 @@ export default function Carousel() {
           <SwiperSlide key={i}>
             {/* 🔥 Full width banner */}
             <div
-              className=" h-[500px] bg-cover bg-center flex items-center justify-center text-white text-xl font-bold "
+              className="h-[300px] md:h-[500px] bg-cover bg-center flex items-center justify-center text-white"
               style={{ backgroundImage: `url(${img})` }}
             >
-              <p className="text-4xl font-bold">
+              <p className="text-2xl md:text-4xl font-bold">
                 About 5nance Slide {i + 1}
               </p>
             </div>

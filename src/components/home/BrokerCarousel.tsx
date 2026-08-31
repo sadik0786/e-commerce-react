@@ -31,8 +31,11 @@ export default function BrokerCarousel() {
         className="swiper_class"
         modules={[Autoplay]}
         onSwiper={setSwiper}
-        spaceBetween={20}
-        slidesPerView={4}
+        breakpoints={{
+          320: { slidesPerView: 1, spaceBetween: 10 },
+          640: { slidesPerView: 2, spaceBetween: 15 },
+          768: { slidesPerView: 4, spaceBetween: 20 },
+        }}
         loop={true}
         // observer={true}
         // observeParents={true}

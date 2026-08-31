@@ -8,7 +8,7 @@ export default function Home() {
       <Carousel />
       <div
         className={
-          "bg-linear-to-b from-amber-50 via-amber-80 to-orange-50 py-10"
+          "bg-linear-to-b from-gray-50 via-gray-80 to-gray-50 py-10"
         }
       >
         <p
@@ -17,7 +17,7 @@ export default function Home() {
           Generate & safeguard wealth with smart algorithms
         </p>
         <div
-          className={`flex justify-between align-middle max-w-6xl m-auto py-4`}
+          className={`flex flex-col md:flex-row justify-between items-center max-w-6xl m-auto py-4 px-4 gap-6`}
         >
           <Card
             imagePath="https://d2inycshohpmtw.cloudfront.net/Content/landing2023/img/icon-topprod-stocks.svg"
@@ -46,25 +46,25 @@ export default function Home() {
       {/* achive goal */}
       <div
         className={
-          "bg-[#00ca9d] pt-10 pl-15 my-15 h-105 max-w-6xl m-auto rounded-2xl relative"
+          "bg-[#00ca9d] pt-10 px-6 md:pl-15 my-15 md:h-105 max-w-6xl mx-4 md:m-auto rounded-2xl relative flex flex-col items-center md:items-start text-center md:text-left overflow-hidden md:overflow-visible"
         }
       >
         <p
-          className={`${roboto.className} text-5xl font-bold text-white text-left mb-4`}
+          className={`${roboto.className} text-3xl md:text-5xl font-bold text-white mb-4`}
         >
           Achieve your goals faster
         </p>
         <p
-          className={`${roboto.className} text-3xl font-bold text-white text-left mb-4`}
+          className={`${roboto.className} text-2xl md:text-3xl font-bold text-white mb-4`}
         >
           with AI-powered investing
         </p>
         <p
-          className={`${roboto.className} text-2xl  text-white text-left mb-4 italic`}
+          className={`${roboto.className} text-lg md:text-2xl text-white mb-4 italic`}
         >
           Get the next-level performance driven app.
         </p>
-        <div className="flex justify-start space-x-5 mt-5">
+        <div className="flex justify-center md:justify-start space-x-5 mt-5 pb-32 md:pb-0 z-10 relative">
           <Image
             src="https://d2inycshohpmtw.cloudfront.net/Content/landing2023/img/icon-googleplay.svg"
             alt="logo"
@@ -88,7 +88,7 @@ export default function Home() {
           alt="logo"
           width={400}
           height={100}
-          className="absolute -bottom-2.5 right-15"
+          className="absolute -bottom-2.5 -right-10 md:right-15 w-[300px] md:w-[400px] z-0"
           // style={{ width: "auto", height: "auto" }}
         />
       </div>
@@ -104,7 +104,7 @@ export default function Home() {
           Our Supported Brokers
         </p>
         <div
-          className={`flex justify-between align-middle max-w-6xl m-auto py-4`}
+          className={`flex justify-between items-center max-w-6xl m-auto py-4 px-4`}
         >
           <BrokerCarousel />
         </div>
